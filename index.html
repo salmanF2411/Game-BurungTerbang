@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Flappy Bird</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <h1>Flappy Bird</h1>
+    <p>Click atau Tekan SPACE untuk Terbang</p>
+
+    <div class="game-container">
+      <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+      <div id="gameOverPopup" class="popup hidden">
+        <h2>Game Over</h2>
+        <p style="color: #333; font-weight: bold; font-size: 20px">
+          Score: <span id="finalScore">0</span>
+        </p>
+        <button id="retryBtn">Retry</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
