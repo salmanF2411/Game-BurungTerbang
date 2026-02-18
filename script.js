@@ -12,9 +12,14 @@ const birdImg = new Image();
 birdImg.src = "assets/Flappy-Bird.png";
 
 // Sound Effects
+const bgm = document.getElementById("backgroundMusic");
 const soundFly = document.getElementById("soundFly");
 const soundScore = document.getElementById("soundScore");
 const soundDie = document.getElementById("soundDie");
+
+// Atur volume (0.0 sampai 1.0)
+bgm.volume = 0.4;
+soundFly.volume = 0.6;
 
 /* ======================
    GAME STATE
@@ -43,14 +48,19 @@ const pipeSpeed = 2;
 ====================== */
 function control() {
   if (gameOver) return;
+
   if (!gameStarted) {
     gameStarted = true;
+    bgm.play().catch((e) => console.log("Menunggu interaksi user untuk musik"));
   }
+
   bird.speed = bird.jump;
 
   // Putar suara kepak sayap
-  soundFly.currentTime = 0;
-  soundFly.play();
+  if (soundFly) {
+    soundFly.currentTime = 0;
+    soundFly.play();
+  }
 }
 
 // Listeners
@@ -94,7 +104,7 @@ function update() {
     if (!pipe.passed && pipe.x + pipeWidth < bird.x) {
       score++;
       pipe.passed = true;
-      soundScore.play(); // Suara poin
+      soundScore.play();
     }
     if (
       bird.x < pipe.x + pipeWidth &&
@@ -162,7 +172,8 @@ function draw() {
 function endGame() {
   if (!gameOver) {
     gameOver = true;
-    soundDie.play(); // Suara mati
+    bgm.pause(); // Musik berhenti saat kalah
+    soundDie.play();
     document.getElementById("finalScore").innerText = score;
     document.getElementById("gameOverPopup").classList.remove("hidden");
   }
@@ -176,6 +187,7 @@ document.getElementById("retryBtn").addEventListener("click", () => {
   frame = 0;
   gameOver = false;
   gameStarted = false;
+  bgm.currentTime = 0; // Ulangi musik dari awal
   document.getElementById("gameOverPopup").classList.add("hidden");
 });
 

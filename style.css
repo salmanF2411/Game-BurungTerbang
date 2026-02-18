@@ -46,16 +46,12 @@ canvas {
   z-index: 5;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  display: none; /* Default hidden for desktop */
 }
 
 #jumpBtnMobile:active {
   background-color: rgba(255, 255, 255, 0.5);
   transform: scale(0.9);
-}
-
-/* Hide jump button on desktop, show only on mobile */
-#jumpBtnMobile {
-  display: none;
 }
 
 @media (max-width: 768px) {
