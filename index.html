@@ -14,20 +14,99 @@
     />
   </head>
   <body>
-    <h1>Flappy Bird</h1>
-    <p>Gunakan Spasi atau Tombol JUMP</p>
-
     <div class="game-container">
       <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+      <div id="mainMenu" class="overlay">
+        <h1>FLAPPY BIRD</h1>
+        <button onclick="startGame()">START</button>
+        <button onclick="showScreen('charSelect')">PILIH KARAKTER</button>
+        <button onclick="showScreen('gameDesc')">MENU PENJELASAN</button>
+      </div>
+
+      <div id="charSelect" class="overlay hidden">
+        <h2>PILIH KARAKTER</h2>
+        <div class="char-list">
+          <img
+            src="assets/Flappy-Bird.png"
+            onclick="selectBird(0)"
+            class="char-opt"
+            id="opt0"
+          />
+          <img
+            src="assets/Flappy-Bird2.png"
+            onclick="selectBird(1)"
+            class="char-opt"
+            id="opt1"
+          />
+          <img
+            src="assets/Flappy-Bird3.png"
+            onclick="selectBird(2)"
+            class="char-opt"
+            id="opt2"
+          />
+          <img
+            src="assets/Flappy-Bird4.png"
+            onclick="selectBird(3)"
+            class="char-opt"
+            id="opt3"
+          />
+          <img
+            src="assets/g4-.png"
+            onclick="selectBird(4)"
+            class="char-opt"
+            id="opt4"
+          />
+          <img
+            src="assets/g5.png"
+            onclick="selectBird(5)"
+            class="char-opt"
+            id="opt5"
+          />
+          <img
+            src="assets/g6.png"
+            onclick="selectBird(6)"
+            class="char-opt"
+            id="opt6"
+          />
+          <img
+            src="assets/g7.png"
+            onclick="selectBird(7)"
+            class="char-opt"
+            id="opt7"
+          />
+          <img
+            src="assets/g8.png"
+            onclick="selectBird(8)"
+            class="char-opt"
+            id="opt8"
+          />
+        </div>
+        <button onclick="showScreen('mainMenu')">KEMBALI</button>
+      </div>
+
+      <div id="gameDesc" class="overlay hidden">
+        <h2>PENJELASAN</h2>
+        <div class="desc-content">
+          <p>
+            Bantu burung melewati pipa hijau! <br /><br />
+            Tekan Spasi atau Tombol JUMP untuk terbang. <br /><br />
+            Jangan menabrak pipa, jangan terbang terlalu tinggi atau jatuh ke
+            bawah!
+          </p>
+        </div>
+        <button onclick="showScreen('mainMenu')">KEMBALI</button>
+      </div>
 
       <button id="jumpBtnMobile">JUMP</button>
 
       <div id="gameOverPopup" class="popup hidden">
-        <h2>Game Over</h2>
-        <p style="color: #333; font-weight: bold; font-size: 20px">
-          Score: <span id="finalScore">0</span>
-        </p>
-        <button id="retryBtn">Retry</button>
+        <h2>GAME OVER</h2>
+        <p>Score: <span id="finalScore">0</span></p>
+        <div class="popup-buttons">
+          <button onclick="backToMenu()">MENU UTAMA</button>
+          <button id="retryBtn">RETRY</button>
+        </div>
       </div>
     </div>
 

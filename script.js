@@ -8,23 +8,35 @@ const bgImg = new Image();
 bgImg.src = "assets/background.png";
 const pipeImg = new Image();
 pipeImg.src = "assets/pipe2-.png";
-const birdImg = new Image();
-birdImg.src = "assets/Flappy-Bird.png";
 
-// Sound Effects
+// Daftar Karakter Burung
+const birdSkins = [
+  "assets/Flappy-Bird.png",
+  "assets/Flappy-Bird2.png",
+  "assets/Flappy-Bird3.png",
+  "assets/Flappy-Bird4.png",
+  "assets/g4-.png",
+  "assets/g5.png",
+  "assets/g6.png",
+  "assets/g7.png",
+  "assets/g8.png",
+];
+let currentSkinIndex = 0;
+let birdImg = new Image();
+birdImg.src = birdSkins[currentSkinIndex];
+
+// Sound Elements
 const bgm = document.getElementById("backgroundMusic");
 const soundFly = document.getElementById("soundFly");
 const soundScore = document.getElementById("soundScore");
 const soundDie = document.getElementById("soundDie");
 
-// Atur volume (0.0 sampai 1.0)
-bgm.volume = 0.4;
-soundFly.volume = 0.6;
+bgm.volume = 0.3;
 
 /* ======================
    GAME STATE
 ====================== */
-let gameStarted = false;
+let gameActive = false; // Membedakan antara Menu dan Gameplay
 let gameOver = false;
 let score = 0;
 let frame = 0;
@@ -44,38 +56,64 @@ const pipeGap = 160;
 const pipeSpeed = 2;
 
 /* ======================
-   CONTROLS
+   NAVIGATION LOGIC
 ====================== */
-function control() {
-  if (gameOver) return;
-
-  if (!gameStarted) {
-    gameStarted = true;
-    bgm.play().catch((e) => console.log("Menunggu interaksi user untuk musik"));
-  }
-
-  bird.speed = bird.jump;
-
-  // Putar suara kepak sayap
-  if (soundFly) {
-    soundFly.currentTime = 0;
-    soundFly.play();
-  }
+function showScreen(screenId) {
+  // Sembunyikan semua overlay menu
+  document
+    .querySelectorAll(".overlay")
+    .forEach((el) => el.classList.add("hidden"));
+  // Tampilkan screen yang diinginkan
+  document.getElementById(screenId).classList.remove("hidden");
 }
 
-// Listeners
+function selectBird(index) {
+  currentSkinIndex = index;
+  birdImg.src = birdSkins[index];
+
+  // Highlight karakter yang dipilih
+  document.querySelectorAll(".char-opt").forEach((img, i) => {
+    img.classList.toggle("selected", i === index);
+  });
+}
+
+function startGame() {
+  document.getElementById("mainMenu").classList.add("hidden");
+  gameActive = true;
+  gameOver = false;
+  bgm.play().catch(() => console.log("Musik butuh interaksi user"));
+  resetGameStats();
+}
+
+function backToMenu() {
+  gameActive = false;
+  gameOver = false;
+  document.getElementById("gameOverPopup").classList.add("hidden");
+  showScreen("mainMenu");
+}
+
+/* ======================
+   GAME CONTROLS
+====================== */
+function control() {
+  if (!gameActive || gameOver) return;
+  bird.speed = bird.jump;
+
+  soundFly.currentTime = 0;
+  soundFly.play();
+}
+
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space") control();
 });
 canvas.addEventListener("click", control);
-const jumpBtnMobile = document.getElementById("jumpBtnMobile");
-jumpBtnMobile.addEventListener("touchstart", (e) => {
+document.getElementById("jumpBtnMobile").addEventListener("touchstart", (e) => {
   e.preventDefault();
   control();
 });
 
 /* ======================
-   GAME LOGIC
+   CORE GAMEPLAY
 ====================== */
 function createPipe() {
   let minH = 50;
@@ -90,7 +128,7 @@ function createPipe() {
 }
 
 function update() {
-  if (!gameStarted || gameOver) return;
+  if (!gameActive || gameOver) return;
 
   bird.speed += bird.gravity;
   bird.y += bird.speed;
@@ -101,11 +139,13 @@ function update() {
 
   pipes.forEach((pipe) => {
     pipe.x -= pipeSpeed;
+    // Cek poin
     if (!pipe.passed && pipe.x + pipeWidth < bird.x) {
       score++;
       pipe.passed = true;
       soundScore.play();
     }
+    // Cek tabrakan
     if (
       bird.x < pipe.x + pipeWidth &&
       bird.x + bird.width > pipe.x &&
@@ -120,8 +160,10 @@ function update() {
 }
 
 function draw() {
+  // Draw Background
   ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
+  // Draw Pipes
   pipes.forEach((pipe) => {
     ctx.save();
     ctx.translate(pipe.x + pipeWidth / 2, pipe.top / 2);
@@ -137,10 +179,11 @@ function draw() {
     );
   });
 
+  // Draw Selected Bird
   ctx.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
-  // Score Pixel Art
-  if (gameStarted || gameOver) {
+  // UI Score (Hanya muncul saat main)
+  if (gameActive) {
     ctx.save();
     ctx.fillStyle = "#e3c505";
     ctx.strokeStyle = "#000000";
@@ -151,45 +194,31 @@ function draw() {
     ctx.fillText("Score: " + score, 30, 60);
     ctx.restore();
   }
-
-  // Start Animation
-  if (!gameStarted && !gameOver) {
-    let scale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.scale(scale, scale);
-    ctx.fillStyle = "white";
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-    ctx.font = "bold 24px Arial";
-    ctx.textAlign = "center";
-    ctx.strokeText("START THE GAME", 0, 0);
-    ctx.fillText("START THE GAME", 0, 0);
-    ctx.restore();
-  }
 }
 
 function endGame() {
-  if (!gameOver) {
-    gameOver = true;
-    bgm.pause(); // Musik berhenti saat kalah
-    soundDie.play();
-    document.getElementById("finalScore").innerText = score;
-    document.getElementById("gameOverPopup").classList.remove("hidden");
-  }
+  gameOver = true;
+  bgm.pause();
+  soundDie.play();
+  document.getElementById("finalScore").innerText = score;
+  document.getElementById("gameOverPopup").classList.remove("hidden");
 }
 
-document.getElementById("retryBtn").addEventListener("click", () => {
+function resetGameStats() {
   bird.y = 250;
   bird.speed = 0;
   pipes = [];
   score = 0;
   frame = 0;
-  gameOver = false;
-  gameStarted = false;
-  bgm.currentTime = 0; // Ulangi musik dari awal
+}
+
+document.getElementById("retryBtn").addEventListener("click", () => {
   document.getElementById("gameOverPopup").classList.add("hidden");
+  startGame();
 });
+
+// Inisialisasi awal
+selectBird(0);
 
 function gameLoop() {
   update();
