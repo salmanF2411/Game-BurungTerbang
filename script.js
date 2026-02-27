@@ -357,11 +357,30 @@ function createPipe() {
   let minH = 50;
   let maxH = canvas.height - pipeGap - minH;
   let topH = Math.floor(Math.random() * (maxH - minH) + minH);
+
+  // FITUR BARU: Logika Pipa Bergerak (Mulai dari skor 30, chance 50%)
+  let isMoving = false;
+  let moveDir = Math.random() > 0.5 ? 1 : -1; // 1 = ke bawah, -1 = ke atas
+  let moveSpeed = 1.5; // Kecepatan pipa bergerak
+  let moveRange = 80; // Jarak maksimal pipa bisa bergerak dari titik awal
+
+  let minTop = Math.max(minH, topH - moveRange);
+  let maxTop = Math.min(maxH, topH + moveRange);
+
+  if (score >= 5 && Math.random() > 0.5) {
+    isMoving = true;
+  }
+
   pipes.push({
     x: canvas.width,
     top: topH,
     bottom: canvas.height - topH - pipeGap,
     passed: false,
+    isMoving: isMoving,
+    moveDir: moveDir,
+    moveSpeed: moveSpeed,
+    minTop: minTop,
+    maxTop: maxTop,
   });
   spawnCoin(canvas.width, topH, topH + pipeGap);
 }
@@ -392,9 +411,28 @@ function update() {
   bird.speed += bird.gravity;
   bird.y += bird.speed;
   if (bird.y < 0 || bird.y + bird.height > canvas.height) endGame();
+
   if (frame % 100 === 0) createPipe();
+
   pipes.forEach((pipe) => {
     pipe.x -= pipeSpeed;
+
+    // FITUR BARU: Update posisi pipa jika statusnya bergerak
+    if (pipe.isMoving) {
+      pipe.top += pipe.moveDir * pipe.moveSpeed;
+      // Pastikan gap bawah selalu sinkron dengan pergerakan bagian atas
+      pipe.bottom = canvas.height - pipe.top - pipeGap;
+
+      // Ubah arah jika pipa sudah mencapai batas min atau max
+      if (pipe.top >= pipe.maxTop) {
+        pipe.top = pipe.maxTop;
+        pipe.moveDir = -1;
+      } else if (pipe.top <= pipe.minTop) {
+        pipe.top = pipe.minTop;
+        pipe.moveDir = 1;
+      }
+    }
+
     if (!pipe.passed && pipe.x + pipeWidth < bird.x) {
       score++;
       pipe.passed = true;
@@ -414,6 +452,7 @@ function update() {
       endGame();
     }
   });
+
   coins.forEach((coin) => {
     coin.x -= pipeSpeed;
     coin.angle += 0.1;
@@ -433,6 +472,7 @@ function update() {
       soundCoin.play();
     }
   });
+
   pipes = pipes.filter((p) => p.x + pipeWidth > 0);
   coins = coins.filter((c) => !c.collected && c.x + coinSize > 0);
   frame++;
